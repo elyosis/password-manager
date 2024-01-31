@@ -1,8 +1,7 @@
 from tkinter import *
+from config import FONT_SIZE
 from password import generate_pw
 from data_manager import save, find_website
-
-FONT_SIZE = 10
 
 # ---------------------------- UI SETUP ------------------------------- #
 

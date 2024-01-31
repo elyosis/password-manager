@@ -1,5 +1,6 @@
 from tkinter import messagebox
 import json
+from config import FILE_PATH
 from validate import validate
 
 
@@ -18,10 +19,10 @@ def save(website_input, email_input, password_input):
 
     if validate(new_data, website):
         try:
-            with open("data.json", "r") as file:
+            with open(FILE_PATH, "r") as file:
                 data = json.load(file)
         except (FileNotFoundError, json.decoder.JSONDecodeError):
-            with open("data.json", "w") as file:
+            with open(FILE_PATH, "w") as file:
                 json.dump(new_data, file, indent=4)
         else:
             if website in data:
@@ -31,7 +32,7 @@ def save(website_input, email_input, password_input):
                 if not is_overwritten:
                     return
             data.update(new_data)
-            with open("data.json", "w") as file:
+            with open(FILE_PATH, "w") as file:
                 json.dump(data, file, indent=4)
         finally:
             website_input.delete(0, "end")
@@ -46,7 +47,7 @@ def save(website_input, email_input, password_input):
 
 def find_website(website_input):
     try:
-        with open("data.json", "r") as file:
+        with open(FILE_PATH, "r") as file:
             data = json.load(file)
     except (FileNotFoundError, json.decoder.JSONDecodeError):
         messagebox.showinfo(title="No Data File", message="No data has been saved yet.")
@@ -57,4 +58,4 @@ def find_website(website_input):
             password = data[website]["password"]
             messagebox.showinfo(title=website, message=f"Email: {email}\nPassword: {password}")
         else:
-            messagebox.showinfo(title="Unsuccessful Search", message="No details for the website indicated exist.")
+            messagebox.showinfo(title="Unsuccessful Search", message=f"No data found for {website}.")
