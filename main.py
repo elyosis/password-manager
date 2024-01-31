@@ -1,76 +1,8 @@
 from tkinter import *
-from tkinter import messagebox
-from random import randint, choice, shuffle
-import json
-import pyperclip
+from password import generate_pw
+from data_manager import save, find_website
 
 FONT_SIZE = 10
-
-
-# ---------------------------- PASSWORD GENERATOR ------------------------------- #
-
-letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
-           'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
-           'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
-numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
-symbols = ['!', '#', '$', '%', '&', '(', ')', '*', '+']
-
-
-def generate_pw():
-    pw_letters = [choice(letters) for n in range(randint(8, 10))]
-    pw_symbols = [choice(symbols) for n in range(randint(2, 4))]
-    pw_numbers = [choice(numbers) for n in range(randint(2, 4))]
-
-    password_list = [*pw_letters, *pw_symbols, *pw_numbers]
-    shuffle(password_list)
-
-    password = "".join(password_list)
-    password_input.insert(END, password)
-    pyperclip.copy(password)
-
-
-# ---------------------------- SAVE PASSWORD ------------------------------- #
-
-
-def save():
-    website = website_input.get()
-    email = email_input.get()
-    password = password_input.get()
-
-    new_data = {website: {
-        "email": email,
-        "password": password}
-    }
-
-    if validate(new_data, website):
-        try:
-            with open("data.json", "r") as file:
-                data = json.load(file)
-        except (FileNotFoundError, json.decoder.JSONDecodeError):
-            with open("data.json", "w") as file:
-                json.dump(new_data, file, indent=4)
-        else:
-            data.update(new_data)
-            with open("data.json", "w") as file:
-                json.dump(data, file, indent=4)
-        finally:
-            website_input.delete(0, "end")
-            email_input.delete(0, "end")
-            password_input.delete(0, "end")
-    else:
-        messagebox.showwarning(title="Error", message="Please don't leave any fields empty!")
-
-
-def validate(data, website):
-    website_len = len(data[website])
-    email_len = len(data[website]["email"])
-    password_len = len(data[website]["password"])
-
-    if website_len and email_len and password_len:
-        return True
-    else:
-        return False
-
 
 # ---------------------------- UI SETUP ------------------------------- #
 
@@ -84,13 +16,17 @@ logo_img = PhotoImage(file="logo.png")
 logo.create_image(100, 100, image=logo_img)
 logo.grid(row=0, column=1)
 
+
 # ------------- Row 1 ------------- #
 website_label = Label(text="Website:", font=("Arial", FONT_SIZE))
 website_label.grid(row=1, column=0)
 
-website_input = Entry(width=38)
-website_input.grid(row=1, column=1, columnspan=2)
+website_input = Entry(width=24)
+website_input.grid(row=1, column=1)
 website_input.focus()
+
+search_button = Button(text="Search", font=("Arial", FONT_SIZE), width=12, command=lambda: find_website(website_input))
+search_button.grid(row=1, column=2)
 
 # ------------- Row 2 ------------- #
 email_label = Label(text="Email/Username:", font=("Arial", FONT_SIZE))
@@ -104,14 +40,16 @@ email_input.insert(0, "youremail@email.com")
 password_label = Label(text="Password:", font=("Arial", FONT_SIZE))
 password_label.grid(row=3, column=0)
 
-password_input = Entry(width=22)
+password_input = Entry(width=24)
 password_input.grid(row=3, column=1)
 
-password_btn = Button(text="Generate Password", padx=2, pady=2, font=("Arial", FONT_SIZE), command=generate_pw)
+password_btn = Button(text="Create Password", padx=2, pady=2, font=("Arial", FONT_SIZE),
+                      command=lambda: generate_pw(password_input))
 password_btn.grid(row=3, column=2)
 
 # ------------- Row 4 ------------- #
-add_btn = Button(text="Add", width=40, font=("Arial", FONT_SIZE), command=save)
+add_btn = Button(text="Add", width=40, font=("Arial", FONT_SIZE),
+                 command=lambda: save(website_input, email_input, password_input))
 add_btn.grid(row=4, column=1, columnspan=2)
 
 window.mainloop()
