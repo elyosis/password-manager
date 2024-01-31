@@ -1,6 +1,7 @@
 from tkinter import *
 from tkinter import messagebox
 from random import randint, choice, shuffle
+import json
 import pyperclip
 
 FONT_SIZE = 10
@@ -36,16 +37,23 @@ def save():
     email = email_input.get()
     password = password_input.get()
 
-    data = {"website": website, "email": email, "password": password}
+    new_data = {website: {
+        "email": email,
+        "password": password}
+    }
 
-    if validate(data):
-        is_ok = messagebox.askokcancel(title="Confirming details",
-                                       message=f"These are the details entered:\nWebsite: {website}\nEmail: {email}\n"
-                                               f"Password: {password}\nIs it okay to save?")
-        if is_ok:
-            with open("data.txt", "a") as file:
-                file.write(f"{website} | {email} | {password}\n")
-
+    if validate(new_data, website):
+        try:
+            with open("data.json", "r") as file:
+                data = json.load(file)
+        except (FileNotFoundError, json.decoder.JSONDecodeError):
+            with open("data.json", "w") as file:
+                json.dump(new_data, file, indent=4)
+        else:
+            data.update(new_data)
+            with open("data.json", "w") as file:
+                json.dump(data, file, indent=4)
+        finally:
             website_input.delete(0, "end")
             email_input.delete(0, "end")
             password_input.delete(0, "end")
@@ -53,10 +61,10 @@ def save():
         messagebox.showwarning(title="Error", message="Please don't leave any fields empty!")
 
 
-def validate(data):
-    website_len = len(data["website"])
-    email_len = len(data["email"])
-    password_len = len(data["password"])
+def validate(data, website):
+    website_len = len(data[website])
+    email_len = len(data[website]["email"])
+    password_len = len(data[website]["password"])
 
     if website_len and email_len and password_len:
         return True
